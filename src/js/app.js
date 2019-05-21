@@ -67,7 +67,7 @@ window.addEventListener('load', () => {
     const stringManifest = JSON.stringify(manifest);
     const blob = new Blob([stringManifest], {type: 'application/json'});
     const manifestURL = URL.createObjectURL(blob);
-    document.querySelector('#manifestPlaceholder').setAttribute('href', manifestURL);
+    // document.querySelector('#manifestPlaceholder').setAttribute('href', manifestURL);
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(`${baseUrl}sw.js`)
