@@ -1,99 +1,70 @@
-const CACHE_STATIC_NAME = 'static_v2';
-const CACHE_DYNAMIC_NAME = 'dynamic_v1';
-const URLS_TO_PRECACHE = [
-    //'/',
-    '/fe-guild-2019-pwa/',
-    'index.html',
-    'offline.html',
-    'src/js/app.js',
-    'src/js/feed.js',
-    'src/lib/material.min.js',
-    'src/lib/material.indigo-deep_orange.min.css',
-    'src/css/app.css',
-    'src/css/feed.css',
-    'src/images/main-image.jpg',
-    'https://fonts.googleapis.com/css?family=Roboto:400,700',
-    'https://fonts.googleapis.com/icon?family=Material+Icons',
-    // 'https://code.getmdl.io/1.3.0/material.indigo-deep_orange.min.css"'
-];
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.5.0/workbox-sw.js');
 
-self.addEventListener('install', event => {
-    console.log('[Service Worker] Installing Service Worker ...', event);
-    event.waitUntil(
-        caches.open(CACHE_STATIC_NAME)
-            .then(cache => {
-                console.log('[Service Worker] Precaching App Shell');
-                cache.addAll(URLS_TO_PRECACHE);
-            })
-            .then(() => {
-                console.log('[ServiceWorker] Skip waiting on install');
-                return self.skipWaiting();
-            })
-    );
-});
+if (workbox) {
+  console.log(`Yay! Workbox is loaded 🎉`);
 
-self.addEventListener('activate', event => {
-    console.log('[Service Worker] Activating Service Worker ...', event);
-
-    event.waitUntil(
-        caches.keys()
-            .then(cacheNames => {
-                return Promise.all(cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_STATIC_NAME && cacheName !== CACHE_DYNAMIC_NAME) {
-                        console.log('[Service Worker] Removing old cache.', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                }));
-            })
-            .then(() => {
-                console.log('[ServiceWorker] Claiming clients');
-                return self.clients.claim();
-            })
-    );
-});
-
-self.addEventListener('fetch', event => {
-    console.log('[Service Worker] Fetching something ....', event);
-
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                if (response) {
-                    console.log(response);
-                    return response;
-                }
-
-                // Clone the request - a request is a stream and can be only consumed once
-                const requestToCache = event.request.clone();
-
-                // Try to make the original HTTP request as intended
-                return fetch(requestToCache)
-                    .then(response => {
-                        // If request fails or server responds with an error code, return that error immediately
-                        if (!response || response.status !== 200) {
-                            return response;
-                        }
-
-                        // Again clone the response because you need to add it into the cache and because it's used
-                        // for the final return response
-                        const responseToCache = response.clone();
-
-                        caches.open(CACHE_DYNAMIC_NAME)
-                            .then(cache => {
-                                cache.put(requestToCache, responseToCache);
-                            });
-
-                        return response;
-                    })
-            })
-            .catch(error => {
-                return caches.open(CACHE_STATIC_NAME)
-                    .then(cache => {
-                        console.log(event.request, event.request.headers.get('accept'));
-                        if (event.request.headers.get('accept').includes('text/html')) {
-                            return cache.match('/fe-guild-2019-pwa/offline.html');
-                        }
-                    });
-            })
-    );
-});
+  workbox.precaching.precacheAndRoute([
+  {
+    "url": "_sw.js",
+    "revision": "23bb3a2070dd177f40d65c1231bde89d"
+  },
+  {
+    "url": "favicon.ico",
+    "revision": "0251fdb59b82f5f8f448fca84e94f357"
+  },
+  {
+    "url": "index.html",
+    "revision": "e010f0409da405928947bf32dde0492e"
+  },
+  {
+    "url": "manifest.json",
+    "revision": "a4f78a215646e8e0111cd289dbd1977e"
+  },
+  {
+    "url": "offline.html",
+    "revision": "97dae7962beccad56bb38e5827a77c1d"
+  },
+  {
+    "url": "src/css/app.css",
+    "revision": "e012adc9432cf2a78c06dfb79fe61074"
+  },
+  {
+    "url": "src/css/feed.css",
+    "revision": "9f8dd3dcefb55f2e47f485c20d5b1041"
+  },
+  {
+    "url": "src/css/help.css",
+    "revision": "1c6d81b27c9d423bece9869b07a7bd73"
+  },
+  {
+    "url": "src/js/app.js",
+    "revision": "57f3e5e5eeadfcf9783e756785d36fac"
+  },
+  {
+    "url": "src/js/feed.js",
+    "revision": "dea5bebb53f83d466c121dd7ebfbe690"
+  },
+  {
+    "url": "src/lib/material.indigo-deep_orange.min.css",
+    "revision": "a776ab54eac9a54727e007e0c92eae70"
+  },
+  {
+    "url": "src/lib/material.min.js",
+    "revision": "713af0c6ce93dbbce2f00bf0a98d0541"
+  },
+  {
+    "url": "src/images/main-image-lg.jpg",
+    "revision": "05b87e478ce30957f4e2f00b5c18f80a"
+  },
+  {
+    "url": "src/images/main-image-sm.jpg",
+    "revision": "6172dffd0848144bbc3f7504d8585058"
+  },
+  {
+    "url": "src/images/main-image.jpg",
+    "revision": "489ce4c1c7ebc7545aa528cea56e50c1"
+  }
+]);
+} else {
+  console.log(`Boo! Workbox didn't load 😬`);
+}
